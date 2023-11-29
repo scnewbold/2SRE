@@ -74,7 +74,7 @@ for (qq in 1:length(cases[,1])){
   y.rr <- XX # robumeta package CORR
   y.rh <- XX # robumeta package HIER
   y.ma <- XX # MAd package
-  
+
   varyhat     <- matrix(0,MC,1)
   sig.muhat   <- matrix(0,MC,I)
   sig.etahat  <- matrix(0,MC,1)
@@ -385,14 +385,20 @@ for (qq in 1:length(cases[,1])){
                   cor    = rho.hat,
                   method = "BHHR",
                   data   = DM.df)
-      
+
       outs <- mareg(outs$es ~ 1,
                     var     = outs$var,
                     method  = 'REML',
                     control = list(stepadj=0.01, maxit=50000000),
                     data    = outs)
       
+      # NOTE: This call of mareg() gives the following error: 
+      #   "Warning message: In model.matrix.default(terms, mf, contrasts) :
+      #    non-list contrasts argument ignored"
+      # As far as I can tell, this is inconsequential.
+      
       y.ma[mc,1] <- coef(outs)
+      
     }
     
     # Bootstrap:

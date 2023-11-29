@@ -5,13 +5,24 @@
 # Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2023)
 #===============================================================================
 
-rm(list=setdiff(ls(),lsf.str())) # Clear environment to start fresh
-script.name <- 'vslmeta-epa'     # Define script name for file handling
-
-#===============================================================================
+#-------------------------------------------------------------------------------
 # PRELIMINARIES:
-#===============================================================================
+#-------------------------------------------------------------------------------
 {
+  # Clear environment to start fresh
+  rm(list=ls()) 
+  
+  # Clear console:
+  cat('\014');
+  
+  # Clear all plots:
+  try(dev.off(dev.list()["RStudioGD"]),silent=TRUE)
+  try(dev.off(),silent=TRUE)
+  
+  # Grab script name for file handling:
+  script.name <- basename(rstudioapi::getSourceEditorContext()$path) 
+  script.name <- gsub(".R","",script.name)
+  
   # Packages
   list.of.packages <-
     c('googlesheets4',
@@ -28,13 +39,6 @@ script.name <- 'vslmeta-epa'     # Define script name for file handling
                   installed.packages()[,"Package"])]
   if(length(new.packages)) install.packages(new.packages)
   lapply(list.of.packages,function(x){library(x,character.only=TRUE)})
-
-  # Clear console:
-  cat('\014');
-
-  # Clear all plots:
-  try(dev.off(dev.list()["RStudioGD"]),silent=TRUE)
-  try(dev.off(),silent=TRUE)
 
   # Define paths for file handling:
   this.dir <- dirname(parent.frame(2)$ofile) # source file dir
@@ -72,9 +76,9 @@ script.name <- 'vslmeta-epa'     # Define script name for file handling
 
 }
 
-#===============================================================================
+#-------------------------------------------------------------------------------
 # FUNCTIONS:
-#===============================================================================
+#-------------------------------------------------------------------------------
 {
   source("pauseFun.R")
   source("ghFun.R")
@@ -86,16 +90,9 @@ script.name <- 'vslmeta-epa'     # Define script name for file handling
   source("twosremrFun.R")
 }
 
-#===============================================================================
+#-------------------------------------------------------------------------------
 # MAIN PROGRAM:
-#===============================================================================
-
-# Income elasticity of VSL:
-# What to do about this depends on how we view comments from SAB.
-# Current settings (w/ IEVSL=0) *do not*  adjust for income ex ante, not only in
-# the meta-regression where we can control for differences in income, but also
-# in the meta-analysis where we do not control for income.
-IEVSL <- 0.0
+#-------------------------------------------------------------------------------
 
 # Assumed correlation among observations within studies (rho):
 # Our estimation approach does not allow estimation of rho, so we must
@@ -129,10 +126,7 @@ for(case in 1:8){
     # Input data are in the Google Sheet file titled "EPA_VSL_metadata" at the
     # following link:
     data <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
-    sheet='Sheet1')
-
-    # Exclude rows without 1 for 'include' variable:
-    data <- data[data$Include==1,]
+    sheet='meta-data')
 
     if(include.means==0)  {data <- data[data$MeanDummy==0,]}
     if(include.medians==0){data <- data[data$MeanDummy==1,]}
@@ -140,20 +134,17 @@ for(case in 1:8){
     if(include.SP==0)     {data <- data[data$SPDummy==0,]}
 
     # Extract variables:
-    # obsID           <- data[,1]  # unique observation id
     ID              <- data$GroupID          # unique group id
-    pubyear         <- data$PublicationYear  # year of publication
+    pubyear         <- data$PubYear          # year of publication
     datayear        <- data$DataYear         # year of data collection
+    dollaryear      <- data$DollarYear       # US$ year of reported VSL estimates
     mnD             <- data$MeanDummy        # mean dummy variable
     mdD             <- matrix(1,length(mnD),1)-mnD # median dummy variable
     spD             <- data$SPDummy          # stated preference dummy variable
     samplesize      <- data$SampleSize       # sample size of original study
-    include         <- data$Include          # include in estimation
-    Y               <- data$VSLestimate.2013 # VSL estimate [2013$US]
-    SE              <- data$StandardError.2013  # standard error [2013$US]
-    income          <- data$SampleAvgIncome.2013 / 10000 # [2013$US]
-    mn.from.md      <- data$MeanFromMedian   # mean estimates that were calculated from median estimates
-    md.to.mn        <- data$MedianConvertedToMean # median estimates that were converted to mean estimates
+    Y               <- data$VSL              # VSL estimate [DataYear $US]
+    SE              <- data$SE               # standard error [DataYear $US]
+    income          <- data$Income / 10000   # [2013 $US]
 
     # Group ids:
     IDs <- unique(ID)
@@ -173,10 +164,31 @@ for(case in 1:8){
     # Total number of observations:
     N <- length(Y)
 
-    # Convert all estimates from 2013$US to 2020$US using the CPI index:
+    # Convert all estimates from DataYear $US to 2020$US using the CPI index:
     # Source: https://data.bls.gov/pdq/SurveyOutputServlet
-    Y  <- Y  * 258.811 / 232.957
-    SE <- SE * 258.811 / 232.957
+    CPI <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
+                       sheet='CPI',range='A13:P122',col_names=FALSE)
+    CPI      <- as.matrix(CPI)
+    CPIyr    <- CPI[,1]
+    CPIindex <- CPI[,14]
+    
+    Y2 <- Y
+    SE2 <- SE
+    
+    Y2013 <- Y
+    SE2013 <- SE
+    
+    income2 <- income
+    for(i in 1:length(Y)){
+      Y2[i]  <- Y[i]  * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==dollaryear[i])]
+      SE2[i] <- SE[i] * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==dollaryear[i])]
+      income2[i] <- income[i] * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==2013)]
+      Y2013[i]   <- Y[i]  * CPIindex[which(CPIyr==2013)] / CPIindex[which(CPIyr==dollaryear[i])]
+      SE2013[i]  <- SE[i] * CPIindex[which(CPIyr==2013)] / CPIindex[which(CPIyr==dollaryear[i])]
+    }
+    Y <- Y2
+    SE <- SE2
+    income <- income2
 
     # Number of observations from parent group of each observation:
     m <- matrix(0,N,1)
@@ -184,7 +196,7 @@ for(case in 1:8){
       m[ij] <- sum(ID==ID[ij])
     }
 
-    if(case==5){data1<-cbind(Y,SE)}
+    #if(case==5){data1<-cbind(Y,SE)}
 
   }
 
@@ -713,63 +725,83 @@ if(TRUE){
 # TWO-STAGE RANDOM-EFFECTS META-REGRESSION (2SREMR):
 if(TRUE){
 
+  RSS.m  <- matrix(0,28,1)
+  yhat.m <- matrix(0,28,1)
+  
   # IMPORT DATA:
   {
     gs4_deauth()
-
+    
     # Input data are in the Google Sheet file titled "EPA_VSL_metadata" at the
     # following link:
     data <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
-                       sheet='Sheet1')
-
-    # Exclude rows without 1 for 'include' variable:
-    data <- data[data$Include==1,]
+                       sheet='meta-data')
 
     # Extract variables:
-    # obsID           <- data[,1]                # unique observation id
-    ID              <- data$GroupID            # unique group id
-    pubyear         <- data$PublicationYear    # year of publication
-    datayear        <- data$DataYear           # year of data collection
-    mnD             <- data$MeanDummy          # mean dummy variable
+    ID              <- data$GroupID          # unique group id
+    pubyear         <- data$PubYear          # year of publication
+    datayear        <- data$DataYear         # year of data collection
+    dollaryear      <- data$DollarYear       # US$ year of reported VSL estimates
+    mnD             <- data$MeanDummy        # mean dummy variable
     mdD             <- matrix(1,length(mnD),1)-mnD # median dummy variable
-    spD             <- data$SPDummy            # stated preference dummy variable
-    samplesize      <- data$SampleSize         # sample size of original study
-    include         <- data$Include            # include in estimation
-    Y               <- data$VSLestimate.2013   # VSL estimate [2013$US]
-    SE              <- data$StandardError.2013 # standard error [2013$US]
-    income          <- data$SampleAvgIncome.2013 / 10000 #
-    mn.from.md      <- data$MeanFromMedian     # mean estimates that were calculated from median estimates
-    md.to.mn        <- data$MedianConvertedToMean # median estimates that were converted to mean estimates
-
+    spD             <- data$SPDummy          # stated preference dummy variable
+    samplesize      <- data$SampleSize       # sample size of original study
+    Y               <- data$VSL              # VSL estimate [DataYear $US]
+    SE              <- data$SE               # standard error [DataYear $US]
+    income          <- data$Income / 10000   # [2013 $US]
+    
     # Group ids:
     IDs <- unique(ID)
-
+    
     # Number of groups:
     I <- length(IDs)
-
+    
     # Assumed correlation among observations within studies (rho):
     rho <- matrix(rho.all,I,1)
-
+    
     # Observations per group:
     J <- matrix(0,I,1)
     for(i in 1:I){
       J[i] <- sum(ID==IDs[i])
     }
-
+    
     # Total number of observations:
     N <- length(Y)
-
-    # Convert all estimates from 2013$US to 2020$US using the CPI index:
+    
+    # Convert all estimates from DataYear $US to 2020$US using the CPI index:
     # Source: https://data.bls.gov/pdq/SurveyOutputServlet
-    Y  <- Y  * 258.811 / 232.957
-    SE <- SE * 258.811 / 232.957
-
+    CPI <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
+           sheet='CPI',range='A13:P122',col_names=FALSE)
+    CPI      <- as.matrix(CPI)
+    CPIyr    <- CPI[,1]
+    CPIindex <- CPI[,14]
+    
+    Y2 <- Y
+    SE2 <- SE
+    
+    Y2013 <- Y
+    SE2013 <- SE
+    
+    income2 <- income
+    for(i in 1:length(Y)){
+      Y2[i]  <- Y[i]  * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==dollaryear[i])]
+      SE2[i] <- SE[i] * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==dollaryear[i])]
+      income2[i] <- income[i] * CPIindex[which(CPIyr==2020)] / CPIindex[which(CPIyr==2013)]
+      Y2013[i]   <- Y[i]  * CPIindex[which(CPIyr==2013)] / CPIindex[which(CPIyr==dollaryear[i])]
+      SE2013[i]  <- SE[i] * CPIindex[which(CPIyr==2013)] / CPIindex[which(CPIyr==dollaryear[i])]
+    }
+    Y <- Y2
+    SE <- SE2
+    income <- income2
+    
     # Number of observations from parent group of each observation:
     m <- matrix(0,N,1)
     for(ij in 1:N){
       m[ij] <- sum(ID==ID[ij])
     }
-
+    
+    #if(case==5){data1<-cbind(Y,SE)}
+    
   }
 
   for(version in c(9,10,11)){ # For Tables 9/12, 10/13, 11/14
@@ -778,7 +810,7 @@ if(TRUE){
     if(version==10){PET <- TRUE;  PEESE <- FALSE}
     if(version==11){PET <- FALSE; PEESE <- TRUE}
 
-    # Models to estimate:
+    # Models [specifications] to estimate:
     #
     # 0 constant only (i.e., meta-analysis not meta-regression model)
     # 1 SP dummy (to estimate a fixed effect for SP vs RP)
@@ -813,7 +845,7 @@ if(TRUE){
         X <- matrix(1,N,1);                    var.names <- 'constant'
         X <- cbind(X,spD);                     var.names <- c(var.names,'sp dummy')
         X <- cbind(X,mdD);                     var.names <- c(var.names,'md dummy')
-        X <- cbind(X,datayear-mean(datayear)); var.names <- c(var.names,'year')
+        X <- cbind(X,datayear-mean(datayear));  var.names <- c(var.names,'year')
         if(PET)  {X <- cbind(X,SE);            var.names <- c(var.names,'s.e.') }
         if(PEESE){X <- cbind(X,SE^2);          var.names <- c(var.names,'s.e.^2')}
       }
@@ -829,7 +861,7 @@ if(TRUE){
         X <- matrix(1,N,1);                    var.names <- 'constant'
         X <- cbind(X,spD);                     var.names <- c(var.names,'sp dummy')
         X <- cbind(X,mdD);                     var.names <- c(var.names,'md dummy')
-        X <- cbind(X,datayear-mean(datayear)); var.names <- c(var.names,'year')
+        X <- cbind(X,datayear-mean(datayear));  var.names <- c(var.names,'year')
         X <- cbind(X,income-mean(income));     var.names <- c(var.names,'income')
         if(PET)  {X <- cbind(X,SE);            var.names <- c(var.names,'s.e.') }
         if(PEESE){X <- cbind(X,SE^2);          var.names <- c(var.names,'s.e.^2')}
@@ -838,7 +870,7 @@ if(TRUE){
         X <- matrix(1,N,1);                    var.names <- 'constant'
         X <- cbind(X,spD);                     var.names <- c(var.names,'sp dummy')
         X <- cbind(X,mdD);                     var.names <- c(var.names,'md dummy')
-        X <- cbind(X,datayear-max(datayear)); var.names <- c(var.names,'year')
+        X <- cbind(X,datayear-mean(datayear)); var.names <- c(var.names,'year')
         X <- cbind(X,spD*(datayear-mean(datayear))); var.names <- c(var.names,'spD*year')
         if(PET)  {X <- cbind(X,SE);            var.names <- c(var.names,'s.e.') }
         if(PEESE){X <- cbind(X,SE^2);          var.names <- c(var.names,'s.e.^2')}
@@ -872,6 +904,44 @@ if(TRUE){
       R2.UNC      <- outs$R2.UNC
       R2.adj.UNC  <- outs$R2.adj.UNC
       R2.cv.UNC   <- outs$R2.cv.UNC
+      
+      # Save cross validation errors for model averaging:
+      {
+        if(model==0 & PET==0 & PEESE==0){RSS.m[1] <- sum(outs$e.cv.CON^2); yhat.m[1] <- bhat.CON[1]}
+        if(model==0 & PET==0 & PEESE==0){RSS.m[2] <- sum(outs$e.cv.UNC^2); yhat.m[2] <- bhat.UNC[1]}
+        if(model==0 & PET==0 & PEESE==1){RSS.m[3] <- sum(outs$e.cv.CON^2); yhat.m[3] <- bhat.CON[1]}
+        if(model==0 & PET==0 & PEESE==1){RSS.m[4] <- sum(outs$e.cv.UNC^2); yhat.m[4] <- bhat.UNC[1]}
+        
+        if(model==1 & PET==0 & PEESE==0){RSS.m[5] <- sum(outs$e.cv.CON^2); yhat.m[5] <- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==1 & PET==0 & PEESE==0){RSS.m[6] <- sum(outs$e.cv.UNC^2); yhat.m[6] <- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==1 & PET==0 & PEESE==1){RSS.m[7] <- sum(outs$e.cv.CON^2); yhat.m[7] <- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==1 & PET==0 & PEESE==1){RSS.m[8] <- sum(outs$e.cv.UNC^2); yhat.m[8] <- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        
+        if(model==2 & PET==0 & PEESE==0){RSS.m[9] <- sum(outs$e.cv.CON^2); yhat.m[9] <- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==2 & PET==0 & PEESE==0){RSS.m[10]<- sum(outs$e.cv.UNC^2); yhat.m[10]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==2 & PET==0 & PEESE==1){RSS.m[11]<- sum(outs$e.cv.CON^2); yhat.m[11]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==2 & PET==0 & PEESE==1){RSS.m[12]<- sum(outs$e.cv.UNC^2); yhat.m[12]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        
+        if(model==3 & PET==0 & PEESE==0){RSS.m[13]<- sum(outs$e.cv.CON^2); yhat.m[13]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==3 & PET==0 & PEESE==0){RSS.m[14]<- sum(outs$e.cv.UNC^2); yhat.m[14]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==3 & PET==0 & PEESE==1){RSS.m[15]<- sum(outs$e.cv.CON^2); yhat.m[15]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==3 & PET==0 & PEESE==1){RSS.m[16]<- sum(outs$e.cv.UNC^2); yhat.m[16]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        
+        if(model==4 & PET==0 & PEESE==0){RSS.m[17]<- sum(outs$e.cv.CON^2); yhat.m[17]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==4 & PET==0 & PEESE==0){RSS.m[18]<- sum(outs$e.cv.UNC^2); yhat.m[18]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==4 & PET==0 & PEESE==1){RSS.m[19]<- sum(outs$e.cv.CON^2); yhat.m[19]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==4 & PET==0 & PEESE==1){RSS.m[20]<- sum(outs$e.cv.UNC^2); yhat.m[20]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        
+        if(model==5 & PET==0 & PEESE==0){RSS.m[21]<- sum(outs$e.cv.CON^2); yhat.m[21]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==5 & PET==0 & PEESE==0){RSS.m[22]<- sum(outs$e.cv.UNC^2); yhat.m[22]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==5 & PET==0 & PEESE==1){RSS.m[23]<- sum(outs$e.cv.CON^2); yhat.m[23]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==5 & PET==0 & PEESE==1){RSS.m[24]<- sum(outs$e.cv.UNC^2); yhat.m[24]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        
+        if(model==6 & PET==0 & PEESE==0){RSS.m[25]<- sum(outs$e.cv.CON^2); yhat.m[25]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==6 & PET==0 & PEESE==0){RSS.m[26]<- sum(outs$e.cv.UNC^2); yhat.m[26]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+        if(model==6 & PET==0 & PEESE==1){RSS.m[27]<- sum(outs$e.cv.CON^2); yhat.m[27]<- bhat.CON[1]+0.5*bhat.CON[2]}
+        if(model==6 & PET==0 & PEESE==1){RSS.m[28]<- sum(outs$e.cv.UNC^2); yhat.m[28]<- bhat.UNC[1]+0.5*bhat.UNC[2]}
+      }
 
       kk <- 0
       if(sum(var.names=='income')>0){
@@ -1260,7 +1330,7 @@ if(TRUE){
     if(TRUE){
       cat('\nTable ',sprintf('%-.0f',version),'\n',sep='',file=out.file.name,append=TRUE)
       cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
-      cat(' & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\\\ \n',file=out.file.name,append=TRUE)
+      cat(' & S0 & S1 & S2 & S3 & S4 & S5 & S6 \\\\ \n',file=out.file.name,append=TRUE)
       cat('\\hline\n',file=out.file.name,append=TRUE)
 
       cat('constant ',file=out.file.name,append=TRUE)
@@ -1450,6 +1520,21 @@ if(TRUE){
 
   }
 
+  # JACKKNIFE MODEL AVERAGING:
+  {
+    M <- 28
+    w.m <- matrix(1/M,M,1)
+    # w.m <- w.m*0; w.m[5] <- 1
+    done <- 0
+    while(done==0){
+      w.mm <- (1/M) * sum(w.m*RSS.m) / RSS.m
+      w.mm <- w.mm/sum(w.mm)
+      if(max(abs(w.mm-w.m))<1e-6){done <- 1}else{w.m <- w.mm}
+    }
+    yhat.ma <- sum(yhat.m*w.m)
+    cat('yhat.ma =',sprintf('%-.3f\n',yhat.ma))
+  }
+  
 }
 
 

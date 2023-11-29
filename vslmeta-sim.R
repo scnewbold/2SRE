@@ -4,16 +4,21 @@
 # analysis estimator to the constructed datasets as reported in
 # Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2023)
 #
-# [calls by vslmeta-sim-iteration.R]
+# [calls vslmeta-sim-iteration.R]
 #===============================================================================
-
-rm(list=setdiff(ls(),lsf.str())) # Clear environment to start fresh
-script.name <- 'vslmeta-sim'     # Define script name for file handling
 
 #===============================================================================
 # PRELIMINARIES:
 #===============================================================================
 if(TRUE){
+  
+  # Clear environment to start fresh
+  rm(list=setdiff(ls(),lsf.str())) 
+  
+  # Grab script name for file handling:
+  script.name <- basename(rstudioapi::getSourceEditorContext()$path) 
+  script.name <- gsub(".R","",script.name)
+  
   # Packages
   list.of.packages <-
     c('metafor',
@@ -87,7 +92,7 @@ K         <- 0   # Number of moderator variables for meta-regression
 # sig.mu.by.group <- 0
 
 # Set Monte Carlo and bootstrap reps:
-MC <- 1000  # 1000
+MC <- 100  # 1000
 BS <- 0     # 100 (to turn off use BS = 0)
 
 # Epsilon to avoid divide by zero:
@@ -113,7 +118,7 @@ cases <- matrix(c(
   60,   15,        3,         1,
   60,   15,        3,         3),16,4,byrow=TRUE)
 
-for(iteration in 1:4){
+for(iteration in 1:1){
   if(iteration==1){rho.lo <- 0.0; rho.hi <- 0.0; rho.hat <- 0.0}
   if(iteration==2){rho.lo <- 0.5; rho.hi <- 0.5; rho.hat <- 0.0}
   if(iteration==3){rho.lo <- 0.5; rho.hi <- 0.5; rho.hat <- 0.5}
