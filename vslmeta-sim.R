@@ -13,7 +13,7 @@
 if(TRUE){
   
   # Clear environment to start fresh
-  rm(list=setdiff(ls(),lsf.str())) 
+  rm(list=ls()) 
   
   # Grab script name for file handling:
   script.name <- basename(rstudioapi::getSourceEditorContext()$path) 
@@ -69,34 +69,31 @@ if(TRUE){
 
 source("ghFun.R")
 source("seroFun.R")
+source("tictocFun.R")
 
 #===============================================================================
 # MAIN PROGRAM:
 #===============================================================================
+
+tictocFun('tic')
 
 set.seed(12345)
 
 # Set simulation parameters:
 VSL       <- 10
 J.lo      <- 1
-se.lo     <- 0.5 # 0.5
-se.hi     <- 5.0 # 5.0
+se.lo     <- 0.5 
+se.hi     <- 5.0 
 sig.eta   <- 0   # set in cases
 sig.mu.lo <- 0.5
 sig.mu.hi <- 0   # set in cases
-rho.lo    <- 0.0 # 0,.5
-rho.hi    <- 0.0 # 0,.5
-rho.hat   <- 0.0 # assumed rho value
 K         <- 0   # Number of moderator variables for meta-regression
 
-# sig.mu.by.group <- 0
-
 # Set Monte Carlo and bootstrap reps:
-MC <- 100  # 1000
+MC <- 1000  # 1000
 BS <- 0     # 100 (to turn off use BS = 0)
 
-# Epsilon to avoid divide by zero:
-eps <- 1e-15
+eps <- 1e-15 # epsilon used later to avoid divide by zero
 
 # Define cases for simulation:
 #  I  J.hi   sig.eta  sig.mu.hi
@@ -119,6 +116,7 @@ cases <- matrix(c(
   60,   15,        3,         3),16,4,byrow=TRUE)
 
 for(iteration in 1:1){
+  
   if(iteration==1){rho.lo <- 0.0; rho.hi <- 0.0; rho.hat <- 0.0}
   if(iteration==2){rho.lo <- 0.5; rho.hi <- 0.5; rho.hat <- 0.0}
   if(iteration==3){rho.lo <- 0.5; rho.hi <- 0.5; rho.hat <- 0.5}
@@ -127,3 +125,6 @@ for(iteration in 1:1){
   source("vslmeta-sim-iteration.R")
   
 }
+
+tictocFun('toc')
+

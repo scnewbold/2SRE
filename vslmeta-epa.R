@@ -81,6 +81,7 @@
 #-------------------------------------------------------------------------------
 {
   source("pauseFun.R")
+  source("tictocFun.R")
   source("ghFun.R")
   source("seroFun.R")
   source("qtestFun.R")
@@ -93,6 +94,8 @@
 #-------------------------------------------------------------------------------
 # MAIN PROGRAM:
 #-------------------------------------------------------------------------------
+
+tictocFun('tic')
 
 # Assumed correlation among observations within studies (rho):
 # Our estimation approach does not allow estimation of rho, so we must
@@ -1536,5 +1539,7 @@ if(TRUE){
   }
   
 }
+
+tictocFun('toc')
 
 
