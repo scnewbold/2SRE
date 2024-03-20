@@ -1,6 +1,6 @@
 #===============================================================================
-# vslmeta-app.R:
-# This script will replicate the results of our application of the 2SRE meta-
+# This is an R script named 'vslmeta-app'
+# which will replicate the results of our application of the 2SRE meta-
 # analysis estimator to the EPA VSL demonstration dataset as reported in
 # Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
 #===============================================================================
