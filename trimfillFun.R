@@ -1,15 +1,16 @@
-# This is a function named 'trimfillFun'
-
+#===============================================================================
+# This is an R function named 'trimfillFun'
 # which computes the trim-and-fill publication bias correction estimator for
 # the two-stage random-effects meta-analysis estimators
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. 2023.
-
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024).
+# Steps:
 # 1. Apply 2SRE meta-analysis to full dataset to estimate VSL.i
 # 2. Compute Wilcoxen rank test statistic, Tn = sum of ranks of individual
 #    observations larger than VSL.i
 # 3. Compute k = (4*Tn-n*(n+1))/(2*n-1) rounded to integer and truncated at 0
 # 4. Trim right-most [largest] k observations
 # 5. Return to step 1 and repeat until k does not change.
+#===============================================================================
 
 trimfillFun <- function(Y,SE,ID){
 
