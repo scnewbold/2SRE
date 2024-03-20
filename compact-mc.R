@@ -2,7 +2,7 @@
 # compact-mc.R
 # This script runs a streamlined (compact) Monte Carlo experiment to verify
 # that our estimators for the non-sampling error variances are valid.
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2023)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
 #===============================================================================
 
 source("getdataFun.R")
