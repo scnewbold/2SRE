@@ -1,9 +1,8 @@
 #===============================================================================
-# vslmeta-sim-iteration.R:
-# This script will replicate the results of our application of the 2SRE meta-
+# This is an R script named 'vslmeta-sim-iteration'
+# which will replicate the results of our application of the 2SRE meta-
 # analysis estimator to the constructed datasets as reported in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2023)
-#
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
 # [called by vslmeta-sim.R]
 #===============================================================================
 
