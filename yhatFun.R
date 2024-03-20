@@ -1,3 +1,10 @@
+#===============================================================================
+# This is an R function named 'yhatFUN'
+# which computes predicted y's and component error variances for the two-stage
+# meta analysis estimator described in
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024).
+#===============================================================================
+
 yhatFun <- function(ID,Y,SE,rho){
 
   IDs <- unique(ID)
