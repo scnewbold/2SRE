@@ -1,13 +1,13 @@
 #===============================================================================
 # getadataFun.R
 # This function with construct a small simulated dataset or will import the
-# EPA VSL demonstration dataset used in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2023)
+# VSL demonstration dataset used in
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
 #===============================================================================
 
-getdataFun <- function(sim.or.epa,seed){
+getdataFun <- function(sim.or.app,seed){
 
-  if(sim.or.epa == 'sim'){
+  if(sim.or.app == 'sim'){
 
     set.seed(seed)
 
@@ -45,9 +45,9 @@ getdataFun <- function(sim.or.epa,seed){
 
   }
 
-  if(sim.or.epa == 'epa'){
+  if(sim.or.app == 'app'){
 
-    # IMPORT DATA USED IN NEWBOLD ET AL (2023):
+    # IMPORT DATA USED IN NEWBOLD ET AL (2024):
     if(TRUE){
       gs4_deauth()
 
