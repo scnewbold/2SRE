@@ -1,6 +1,6 @@
 #===============================================================================
-# getadataFun.R
-# This function with construct a small simulated dataset or will import the
+# This is an R function named 'getadataFun'
+# which will construct a small simulated dataset or will import the
 # VSL demonstration dataset used in
 # Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
 #===============================================================================
