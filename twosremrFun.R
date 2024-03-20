@@ -1,8 +1,9 @@
-# This is a function named 'twosremrFun'
-
+#===============================================================================
+# This is an R function named 'twosremrFun'
 # which computes a two-stage random-effects meta-regression estimator for
 # the two-stage random-effects meta-analysis estimators
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. 2023.
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024).
+#===============================================================================
 
 twosremrFun <- function(Y,X,SE,ID,rho){
 
