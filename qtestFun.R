@@ -1,7 +1,9 @@
-# This is a function named 'qtestFun'
-
-# which [...does what...]
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. 2023.
+#===============================================================================
+# qtestFUN.R
+# This script computes the Q statistic to test for excess heterogeneity among
+# the primary estimates for meta-anlaysis.
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+#===============================================================================
 
 qtestFun <- function(ID,y,se){
   IDs  <- unique(ID)
