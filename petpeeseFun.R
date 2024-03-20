@@ -2,7 +2,7 @@
 
 # which computes the PET-PEESE publication bias correction estimator for
 # the two-stage random-effects meta-analysis estimators
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. 2023.
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. 2024.
 
 petpeeseFun <- function(Y,SE){
 
