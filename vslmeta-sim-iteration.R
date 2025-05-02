@@ -2,7 +2,7 @@
 # This is an R script named 'vslmeta-sim-iteration'
 # which will replicate the results of our application of the 2SRE meta-
 # analysis estimator to the constructed datasets as reported in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 # [called by vslmeta-sim.R]
 #===============================================================================
 
@@ -22,7 +22,6 @@ if(iteration==1){
     cat('\n|---------------------------------------------------------------------------|',file=out.file.name,append=TRUE)
     cat('\n| R OUTPUT BELOW                                                            |',file=out.file.name,append=TRUE)
     cat('\n|---------------------------------------------------------------------------|\n',file=out.file.name,append=TRUE)
-    
   }
   
 }

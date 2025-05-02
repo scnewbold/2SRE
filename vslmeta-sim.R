@@ -2,7 +2,7 @@
 # This is an R script named 'vslmeta-sim'
 # which will replicate the results of our application of the 2SRE meta-
 # analysis estimator to the constructed datasets as reported in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 # [calls vslmeta-sim-iteration.R]
 #===============================================================================
 
@@ -22,7 +22,8 @@ if(TRUE){
   list.of.packages <-
     c('metafor',
       'robumeta',
-      'MAd')
+      'MAd',
+      'tikzDevice')
 
   new.packages <- list.of.packages[!(list.of.packages %in%
                                        installed.packages()[,"Package"])]
@@ -89,7 +90,7 @@ sig.mu.hi <- 0   # set in cases
 K         <- 0   # Number of moderator variables for meta-regression
 
 # Set Monte Carlo and bootstrap reps:
-MC <- 1000  # 1000
+MC <- 10  # 1000
 BS <- 0     # 100 (to turn off use BS = 0)
 
 eps <- 1e-15 # epsilon used later to avoid divide by zero
@@ -114,7 +115,7 @@ cases <- matrix(c(
   60,   15,        3,         1,
   60,   15,        3,         3),16,4,byrow=TRUE)
 
-for(iteration in 1:1){
+for(iteration in 1:4){
   
   if(iteration==1){rho.lo <- 0.0; rho.hi <- 0.0; rho.hat <- 0.0}
   if(iteration==2){rho.lo <- 0.5; rho.hi <- 0.5; rho.hat <- 0.0}

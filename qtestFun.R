@@ -2,7 +2,7 @@
 # This is an R function named 'qtestFUN'
 # which computes the Q statistic to test for excess heterogeneity among
 # the primary estimates for meta-anlaysis, as used in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 #===============================================================================
 
 qtestFun <- function(ID,y,se){

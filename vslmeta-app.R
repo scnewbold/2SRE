@@ -2,7 +2,7 @@
 # This is an R script named 'vslmeta-app'
 # which will replicate the results of our application of the 2SRE meta-
 # analysis estimator to the EPA VSL demonstration dataset as reported in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 #===============================================================================
 
 #-------------------------------------------------------------------------------
@@ -50,11 +50,12 @@
   date.time     <- gsub(" ","_",Sys.time())
   date.time     <- gsub("-","_",date.time)
   date.time     <- gsub(":","_",date.time)
-  out.file.name <- paste(output.path,'/',script.name,'-',date.time,'.out',sep='')
+  # out.file.name <- paste(output.path,'/',script.name,'-',date.time,'.out',sep='')
+  out.file.name <- paste(output.path,'/',script.name,'.out',sep='')
   outfile       <- file.create(out.file.name)
 
   # WRITE SOURCE FILE TO OUTPUT FILE:
-  {
+  if(FALSE){
     source.file.name <- paste(code.path,'/',script.name,'.R',sep='')
 
     # Read lines of source file:
@@ -107,20 +108,20 @@ rho.all <- 0.5
 g.scale <- 1
 
 # In the paper, meta-analysis results are reported in Table 8.
-TABLE8 <- matrix(0,14,11)
+TABLE4 <- matrix(0,14,11)
 for(case in 1:8){
 
   set.seed(1234)
   B <- 1000 # Number of bootstrap reps:
 
-  if(case==1){include.means<-1;include.medians<-1;include.HW<-1;include.SP<-0;balanced<-0} # HW mm
-  if(case==2){include.means<-1;include.medians<-0;include.HW<-1;include.SP<-0;balanced<-0} # HW m
-  if(case==3){include.means<-1;include.medians<-1;include.HW<-0;include.SP<-1;balanced<-0} # SP mm
-  if(case==4){include.means<-1;include.medians<-0;include.HW<-0;include.SP<-1;balanced<-0} # SP m
-  if(case==5){include.means<-1;include.medians<-1;include.HW<-1;include.SP<-1;balanced<-0} # pooled mm
-  if(case==6){include.means<-1;include.medians<-0;include.HW<-1;include.SP<-1;balanced<-0} # pooled m
-  if(case==7){include.means<-1;include.medians<-1;include.HW<-1;include.SP<-1;balanced<-1} # balanced mm
-  if(case==8){include.means<-1;include.medians<-0;include.HW<-1;include.SP<-1;balanced<-1} # balanced m
+  if(case==1){include.means<-1;include.medians<-1;include.RP<-1;include.SP<-0;balanced<-0} # RP mm
+  if(case==2){include.means<-1;include.medians<-0;include.RP<-1;include.SP<-0;balanced<-0} # RP m
+  if(case==3){include.means<-1;include.medians<-1;include.RP<-0;include.SP<-1;balanced<-0} # SP mm
+  if(case==4){include.means<-1;include.medians<-0;include.RP<-0;include.SP<-1;balanced<-0} # SP m
+  if(case==5){include.means<-1;include.medians<-1;include.RP<-1;include.SP<-1;balanced<-0} # pooled mm
+  if(case==6){include.means<-1;include.medians<-0;include.RP<-1;include.SP<-1;balanced<-0} # pooled m
+  if(case==7){include.means<-1;include.medians<-1;include.RP<-1;include.SP<-1;balanced<-1} # balanced mm
+  if(case==8){include.means<-1;include.medians<-0;include.RP<-1;include.SP<-1;balanced<-1} # balanced m
 
   # IMPORT DATA FOR THIS CASE:
   {
@@ -129,11 +130,11 @@ for(case in 1:8){
     # Input data are in the Google Sheet file titled "EPA_VSL_metadata" at the
     # following link:
     data <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
-    sheet='meta-data')
+    sheet='epa-meta-data')
 
     if(include.means==0)  {data <- data[data$MeanDummy==0,]}
     if(include.medians==0){data <- data[data$MeanDummy==1,]}
-    if(include.HW==0)     {data <- data[data$SPDummy==1,]}
+    if(include.RP==0)     {data <- data[data$SPDummy==1,]}
     if(include.SP==0)     {data <- data[data$SPDummy==0,]}
 
     # Extract variables:
@@ -322,7 +323,7 @@ for(case in 1:8){
 
       }
 
-      # HW:
+      # RP:
       Y   <- Y0[which(spD==0)]
       SE  <- SE0[which(spD==0)]
       ID  <- ID0[which(spD==0)]
@@ -330,18 +331,18 @@ for(case in 1:8){
       I   <- length(IDs)
 
       outs       <- twosremaFun(Y,SE,ID,rho)
-      yhat.sm.HW <- outs[[1]]
-      yhat.mm.HW <- outs[[2]]
-      yhat.ru.HW <- outs[[3]]
-      yhat.rc.HW <- outs[[4]]
-      sero.ru.HW <- outs[[5]]
-      sero.rc.HW <- outs[[6]]
+      yhat.sm.RP <- outs[[1]]
+      yhat.mm.RP <- outs[[2]]
+      yhat.ru.RP <- outs[[3]]
+      yhat.rc.RP <- outs[[4]]
+      sero.ru.RP <- outs[[5]]
+      sero.rc.RP <- outs[[6]]
 
       # Bootstrap standard errors:
-      yhat.sm.BS.HW <- matrix(0,B,1)
-      yhat.mm.BS.HW <- matrix(0,B,1)
-      yhat.ru.BS.HW <- matrix(0,B,1)
-      yhat.rc.BS.HW <- matrix(0,B,1)
+      yhat.sm.BS.RP <- matrix(0,B,1)
+      yhat.mm.BS.RP <- matrix(0,B,1)
+      yhat.ru.BS.RP <- matrix(0,B,1)
+      yhat.rc.BS.RP <- matrix(0,B,1)
 
       for(b in 1:B){
 
@@ -367,22 +368,22 @@ for(case in 1:8){
           done <- 1
         }
         outs <- twosremaFun(Yb,SEb,IDb,rho)
-        yhat.sm.BS.HW[b]  <- outs[[1]]
-        yhat.mm.BS.HW[b]  <- outs[[2]]
-        yhat.ru.BS.HW[b]  <- outs[[3]]
-        yhat.rc.BS.HW[b]  <- outs[[4]]
+        yhat.sm.BS.RP[b]  <- outs[[1]]
+        yhat.mm.BS.RP[b]  <- outs[[2]]
+        yhat.ru.BS.RP[b]  <- outs[[3]]
+        yhat.rc.BS.RP[b]  <- outs[[4]]
 
       }
 
-      yhat.sm = .5*(yhat.sm.SP+yhat.sm.HW)
-      yhat.mm = .5*(yhat.mm.SP+yhat.mm.HW)
-      yhat.ru = .5*(yhat.ru.SP+yhat.ru.HW)
-      yhat.rc = .5*(yhat.rc.SP+yhat.rc.HW)
+      yhat.sm = .5*(yhat.sm.SP+yhat.sm.RP)
+      yhat.mm = .5*(yhat.mm.SP+yhat.mm.RP)
+      yhat.ru = .5*(yhat.ru.SP+yhat.ru.RP)
+      yhat.rc = .5*(yhat.rc.SP+yhat.rc.RP)
 
-      yhat.sm.BS = .5*(yhat.sm.BS.SP+yhat.sm.BS.HW)
-      yhat.mm.BS = .5*(yhat.mm.BS.SP+yhat.mm.BS.HW)
-      yhat.ru.BS = .5*(yhat.ru.BS.SP+yhat.ru.BS.HW)
-      yhat.rc.BS = .5*(yhat.rc.BS.SP+yhat.rc.BS.HW)
+      yhat.sm.BS = .5*(yhat.sm.BS.SP+yhat.sm.BS.RP)
+      yhat.mm.BS = .5*(yhat.mm.BS.SP+yhat.mm.BS.RP)
+      yhat.ru.BS = .5*(yhat.ru.BS.SP+yhat.ru.BS.RP)
+      yhat.rc.BS = .5*(yhat.rc.BS.SP+yhat.rc.BS.RP)
 
       sebs.sm <- sqrt(var(yhat.sm.BS))
       sebs.mm <- sqrt(var(yhat.mm.BS))
@@ -484,244 +485,244 @@ for(case in 1:8){
 
   }
 
-  # SAVE RESULTS FOR THIS CASE TO TABLE8 MATRIX
+  # SAVE RESULTS FOR THIS CASE TO TABLE4 MATRIX
   {
     if(case==1){
-      TABLE8[1,1] <-yhat.sm; TABLE8[1,2] <-sebs.sm
-      TABLE8[3,1] <-yhat.mm; TABLE8[3,2] <-sebs.mm
-      TABLE8[5,1] <-yhat.ru; TABLE8[5,2] <-sebs.ru
-      TABLE8[7,1] <-yhat.rc; TABLE8[7,2] <-sebs.rc
-      TABLE8[9,1] <-yhat.TFu;TABLE8[9,2] <-sebs.TFu
-      TABLE8[11,1]<-yhat.TFc;TABLE8[11,2]<-sebs.TFc
-      TABLE8[13,1]<-yhat.PP; TABLE8[13,2]<-sebs.PP
+      TABLE4[1,1] <-yhat.sm; TABLE4[1,2] <-sebs.sm
+      TABLE4[3,1] <-yhat.mm; TABLE4[3,2] <-sebs.mm
+      TABLE4[5,1] <-yhat.ru; TABLE4[5,2] <-sebs.ru
+      TABLE4[7,1] <-yhat.rc; TABLE4[7,2] <-sebs.rc
+      TABLE4[9,1] <-yhat.TFu;TABLE4[9,2] <-sebs.TFu
+      TABLE4[11,1]<-yhat.TFc;TABLE4[11,2]<-sebs.TFc
+      TABLE4[13,1]<-yhat.PP; TABLE4[13,2]<-sebs.PP
     }
     if(case==2){
-      TABLE8[2,1] <-yhat.sm; TABLE8[2,2] <-sebs.sm
-      TABLE8[4,1] <-yhat.mm; TABLE8[4,2] <-sebs.mm
-      TABLE8[6,1] <-yhat.ru; TABLE8[6,2] <-sebs.ru
-      TABLE8[8,1] <-yhat.rc; TABLE8[8,2] <-sebs.rc
-      TABLE8[10,1]<-yhat.TFu;TABLE8[10,2]<-sebs.TFu
-      TABLE8[12,1]<-yhat.TFc;TABLE8[12,2]<-sebs.TFc
-      TABLE8[14,1]<-yhat.PP; TABLE8[14,2]<-sebs.PP
+      TABLE4[2,1] <-yhat.sm; TABLE4[2,2] <-sebs.sm
+      TABLE4[4,1] <-yhat.mm; TABLE4[4,2] <-sebs.mm
+      TABLE4[6,1] <-yhat.ru; TABLE4[6,2] <-sebs.ru
+      TABLE4[8,1] <-yhat.rc; TABLE4[8,2] <-sebs.rc
+      TABLE4[10,1]<-yhat.TFu;TABLE4[10,2]<-sebs.TFu
+      TABLE4[12,1]<-yhat.TFc;TABLE4[12,2]<-sebs.TFc
+      TABLE4[14,1]<-yhat.PP; TABLE4[14,2]<-sebs.PP
     }
     if(case==3){
-      TABLE8[1,3] <-yhat.sm; TABLE8[1,4] <-sebs.sm
-      TABLE8[3,3] <-yhat.mm; TABLE8[3,4] <-sebs.mm
-      TABLE8[5,3] <-yhat.ru; TABLE8[5,4] <-sebs.ru
-      TABLE8[7,3] <-yhat.rc; TABLE8[7,4] <-sebs.rc
-      TABLE8[9,3] <-yhat.TFu;TABLE8[9,4] <-sebs.TFu
-      TABLE8[11,3]<-yhat.TFc;TABLE8[11,4]<-sebs.TFc
-      TABLE8[13,3]<-yhat.PP; TABLE8[13,4]<-sebs.PP
+      TABLE4[1,3] <-yhat.sm; TABLE4[1,4] <-sebs.sm
+      TABLE4[3,3] <-yhat.mm; TABLE4[3,4] <-sebs.mm
+      TABLE4[5,3] <-yhat.ru; TABLE4[5,4] <-sebs.ru
+      TABLE4[7,3] <-yhat.rc; TABLE4[7,4] <-sebs.rc
+      TABLE4[9,3] <-yhat.TFu;TABLE4[9,4] <-sebs.TFu
+      TABLE4[11,3]<-yhat.TFc;TABLE4[11,4]<-sebs.TFc
+      TABLE4[13,3]<-yhat.PP; TABLE4[13,4]<-sebs.PP
     }
     if(case==4){
-      TABLE8[2,3] <-yhat.sm; TABLE8[2,4] <-sebs.sm
-      TABLE8[4,3] <-yhat.mm; TABLE8[4,4] <-sebs.mm
-      TABLE8[6,3] <-yhat.ru; TABLE8[6,4] <-sebs.ru
-      TABLE8[8,3] <-yhat.rc; TABLE8[8,4] <-sebs.rc
-      TABLE8[10,3]<-yhat.TFu;TABLE8[10,4]<-sebs.TFu
-      TABLE8[12,3]<-yhat.TFc;TABLE8[12,4]<-sebs.TFc
-      TABLE8[14,3]<-yhat.PP; TABLE8[14,4]<-sebs.PP
+      TABLE4[2,3] <-yhat.sm; TABLE4[2,4] <-sebs.sm
+      TABLE4[4,3] <-yhat.mm; TABLE4[4,4] <-sebs.mm
+      TABLE4[6,3] <-yhat.ru; TABLE4[6,4] <-sebs.ru
+      TABLE4[8,3] <-yhat.rc; TABLE4[8,4] <-sebs.rc
+      TABLE4[10,3]<-yhat.TFu;TABLE4[10,4]<-sebs.TFu
+      TABLE4[12,3]<-yhat.TFc;TABLE4[12,4]<-sebs.TFc
+      TABLE4[14,3]<-yhat.PP; TABLE4[14,4]<-sebs.PP
     }
     if(case==5){
-      TABLE8[1,6] <-yhat.sm; TABLE8[1,7] <-sebs.sm
-      TABLE8[3,6] <-yhat.mm; TABLE8[3,7] <-sebs.mm
-      TABLE8[5,6] <-yhat.ru; TABLE8[5,7] <-sebs.ru
-      TABLE8[7,6] <-yhat.rc; TABLE8[7,7] <-sebs.rc
-      TABLE8[9,6] <-yhat.TFu;TABLE8[9,7] <-sebs.TFu
-      TABLE8[11,6]<-yhat.TFc;TABLE8[11,7]<-sebs.TFc
-      TABLE8[13,6]<-yhat.PP; TABLE8[13,7]<-sebs.PP
+      TABLE4[1,6] <-yhat.sm; TABLE4[1,7] <-sebs.sm
+      TABLE4[3,6] <-yhat.mm; TABLE4[3,7] <-sebs.mm
+      TABLE4[5,6] <-yhat.ru; TABLE4[5,7] <-sebs.ru
+      TABLE4[7,6] <-yhat.rc; TABLE4[7,7] <-sebs.rc
+      TABLE4[9,6] <-yhat.TFu;TABLE4[9,7] <-sebs.TFu
+      TABLE4[11,6]<-yhat.TFc;TABLE4[11,7]<-sebs.TFc
+      TABLE4[13,6]<-yhat.PP; TABLE4[13,7]<-sebs.PP
     }
     if(case==6){
-      TABLE8[2,6] <-yhat.sm; TABLE8[2,7] <-sebs.sm
-      TABLE8[4,6] <-yhat.mm; TABLE8[4,7] <-sebs.mm
-      TABLE8[6,6] <-yhat.ru; TABLE8[6,7] <-sebs.ru
-      TABLE8[8,6] <-yhat.rc; TABLE8[8,7] <-sebs.rc
-      TABLE8[10,6]<-yhat.TFu;TABLE8[10,7]<-sebs.TFu
-      TABLE8[12,6]<-yhat.TFc;TABLE8[12,7]<-sebs.TFc
-      TABLE8[14,6]<-yhat.PP; TABLE8[14,7]<-sebs.PP
+      TABLE4[2,6] <-yhat.sm; TABLE4[2,7] <-sebs.sm
+      TABLE4[4,6] <-yhat.mm; TABLE4[4,7] <-sebs.mm
+      TABLE4[6,6] <-yhat.ru; TABLE4[6,7] <-sebs.ru
+      TABLE4[8,6] <-yhat.rc; TABLE4[8,7] <-sebs.rc
+      TABLE4[10,6]<-yhat.TFu;TABLE4[10,7]<-sebs.TFu
+      TABLE4[12,6]<-yhat.TFc;TABLE4[12,7]<-sebs.TFc
+      TABLE4[14,6]<-yhat.PP; TABLE4[14,7]<-sebs.PP
     }
     # Balanced cases:
     if(case==7){
-      TABLE8[1,9]  <- mean(c(TABLE8[1,1],TABLE8[1,3]))
-      TABLE8[1,10] <- .5^2*TABLE8[1,2]+.5^2*TABLE8[1,4]
+      TABLE4[1,9]  <- mean(c(TABLE4[1,1],TABLE4[1,3]))
+      TABLE4[1,10] <- .5^2*TABLE4[1,2]+.5^2*TABLE4[1,4]
 
-      TABLE8[3,9]  <- mean(c(TABLE8[3,1],TABLE8[3,3]))
-      TABLE8[3,10] <- .5^2*TABLE8[3,2]+.5^2*TABLE8[3,4]
+      TABLE4[3,9]  <- mean(c(TABLE4[3,1],TABLE4[3,3]))
+      TABLE4[3,10] <- .5^2*TABLE4[3,2]+.5^2*TABLE4[3,4]
 
-      TABLE8[5,9]  <- mean(c(TABLE8[5,1],TABLE8[5,3]))
-      TABLE8[5,10] <- .5^2*TABLE8[5,2]+.5^2*TABLE8[5,4]
+      TABLE4[5,9]  <- mean(c(TABLE4[5,1],TABLE4[5,3]))
+      TABLE4[5,10] <- .5^2*TABLE4[5,2]+.5^2*TABLE4[5,4]
 
-      TABLE8[7,9]  <- mean(c(TABLE8[7,1],TABLE8[7,3]))
-      TABLE8[7,10] <- .5^2*TABLE8[7,2]+.5^2*TABLE8[7,4]
+      TABLE4[7,9]  <- mean(c(TABLE4[7,1],TABLE4[7,3]))
+      TABLE4[7,10] <- .5^2*TABLE4[7,2]+.5^2*TABLE4[7,4]
 
-      TABLE8[9,9]  <- mean(c(TABLE8[9,1],TABLE8[9,3]))
-      TABLE8[9,10] <- .5^2*TABLE8[9,2]+.5^2*TABLE8[9,4]
+      TABLE4[9,9]  <- mean(c(TABLE4[9,1],TABLE4[9,3]))
+      TABLE4[9,10] <- .5^2*TABLE4[9,2]+.5^2*TABLE4[9,4]
 
-      TABLE8[11,9] <- mean(c(TABLE8[11,1],TABLE8[11,3]))
-      TABLE8[11,10]<- .5^2*TABLE8[11,2]+.5^2*TABLE8[11,4]
+      TABLE4[11,9] <- mean(c(TABLE4[11,1],TABLE4[11,3]))
+      TABLE4[11,10]<- .5^2*TABLE4[11,2]+.5^2*TABLE4[11,4]
       
-      TABLE8[13,9] <- mean(c(TABLE8[13,1],TABLE8[13,3]))
-      TABLE8[13,10]<- .5^2*TABLE8[13,2]+.5^2*TABLE8[13,4]
+      TABLE4[13,9] <- mean(c(TABLE4[13,1],TABLE4[13,3]))
+      TABLE4[13,10]<- .5^2*TABLE4[13,2]+.5^2*TABLE4[13,4]
     }
     if(case==8){
-      TABLE8[2,9]  <- mean(c(TABLE8[2,1],TABLE8[2,3]))
-      TABLE8[2,10] <- .5^2*TABLE8[2,2]+.5^2*TABLE8[2,4]
+      TABLE4[2,9]  <- mean(c(TABLE4[2,1],TABLE4[2,3]))
+      TABLE4[2,10] <- .5^2*TABLE4[2,2]+.5^2*TABLE4[2,4]
 
-      TABLE8[4,9]  <- mean(c(TABLE8[4,1],TABLE8[4,3]))
-      TABLE8[4,10] <- .5^2*TABLE8[4,2]+.5^2*TABLE8[4,4]
+      TABLE4[4,9]  <- mean(c(TABLE4[4,1],TABLE4[4,3]))
+      TABLE4[4,10] <- .5^2*TABLE4[4,2]+.5^2*TABLE4[4,4]
 
-      TABLE8[6,9]  <- mean(c(TABLE8[6,1],TABLE8[6,3]))
-      TABLE8[6,10] <- .5^2*TABLE8[6,2]+.5^2*TABLE8[6,4]
+      TABLE4[6,9]  <- mean(c(TABLE4[6,1],TABLE4[6,3]))
+      TABLE4[6,10] <- .5^2*TABLE4[6,2]+.5^2*TABLE4[6,4]
 
-      TABLE8[8,9]  <- mean(c(TABLE8[8,1],TABLE8[8,3]))
-      TABLE8[8,10] <- .5^2*TABLE8[8,2]+.5^2*TABLE8[8,4]
+      TABLE4[8,9]  <- mean(c(TABLE4[8,1],TABLE4[8,3]))
+      TABLE4[8,10] <- .5^2*TABLE4[8,2]+.5^2*TABLE4[8,4]
 
-      TABLE8[10,9]  <- mean(c(TABLE8[10,1],TABLE8[10,3]))
-      TABLE8[10,10] <- .5^2*TABLE8[10,2]+.5^2*TABLE8[10,4]
+      TABLE4[10,9]  <- mean(c(TABLE4[10,1],TABLE4[10,3]))
+      TABLE4[10,10] <- .5^2*TABLE4[10,2]+.5^2*TABLE4[10,4]
 
-      TABLE8[12,9] <- mean(c(TABLE8[12,1],TABLE8[12,3]))
-      TABLE8[12,10]<- .5^2*TABLE8[12,2]+.5^2*TABLE8[12,4]
+      TABLE4[12,9] <- mean(c(TABLE4[12,1],TABLE4[12,3]))
+      TABLE4[12,10]<- .5^2*TABLE4[12,2]+.5^2*TABLE4[12,4]
       
-      TABLE8[14,9] <- mean(c(TABLE8[14,1],TABLE8[14,3]))
-      TABLE8[14,10]<- .5^2*TABLE8[14,2]+.5^2*TABLE8[14,4]
+      TABLE4[14,9] <- mean(c(TABLE4[14,1],TABLE4[14,3]))
+      TABLE4[14,10]<- .5^2*TABLE4[14,2]+.5^2*TABLE4[14,4]
     }
     
     # RMSEs:
     {
-      TABLE8[1,5] <- sqrt(TABLE8[1,4]^2 +(TABLE8[1,3] -TABLE8[2,3])^2) 
-      TABLE8[3,5] <- sqrt(TABLE8[3,4]^2 +(TABLE8[3,3] -TABLE8[4,3])^2) 
-      TABLE8[5,5] <- sqrt(TABLE8[5,4]^2 +(TABLE8[5,3] -TABLE8[6,3])^2)
-      TABLE8[7,5] <- sqrt(TABLE8[7,4]^2 +(TABLE8[7,3] -TABLE8[8,3])^2) 
-      TABLE8[9,5] <- sqrt(TABLE8[9,4]^2 +(TABLE8[9,3] -TABLE8[10,3])^2) 
-      TABLE8[11,5]<- sqrt(TABLE8[11,4]^2+(TABLE8[11,3]-TABLE8[12,3])^2)
-      TABLE8[13,5]<- sqrt(TABLE8[13,4]^2+(TABLE8[13,3]-TABLE8[14,3])^2) 
+      TABLE4[1,5] <- sqrt(TABLE4[1,4]^2 +(TABLE4[1,3] -TABLE4[2,3])^2) 
+      TABLE4[3,5] <- sqrt(TABLE4[3,4]^2 +(TABLE4[3,3] -TABLE4[4,3])^2) 
+      TABLE4[5,5] <- sqrt(TABLE4[5,4]^2 +(TABLE4[5,3] -TABLE4[6,3])^2)
+      TABLE4[7,5] <- sqrt(TABLE4[7,4]^2 +(TABLE4[7,3] -TABLE4[8,3])^2) 
+      TABLE4[9,5] <- sqrt(TABLE4[9,4]^2 +(TABLE4[9,3] -TABLE4[10,3])^2) 
+      TABLE4[11,5]<- sqrt(TABLE4[11,4]^2+(TABLE4[11,3]-TABLE4[12,3])^2)
+      TABLE4[13,5]<- sqrt(TABLE4[13,4]^2+(TABLE4[13,3]-TABLE4[14,3])^2) 
       
-      TABLE8[1,8] <- sqrt(TABLE8[1,7]^2 +(TABLE8[1,6] -TABLE8[2,6])^2) 
-      TABLE8[3,8] <- sqrt(TABLE8[3,7]^2 +(TABLE8[3,6] -TABLE8[4,6])^2) 
-      TABLE8[5,8] <- sqrt(TABLE8[5,7]^2 +(TABLE8[5,6] -TABLE8[6,6])^2)
-      TABLE8[7,8] <- sqrt(TABLE8[7,7]^2 +(TABLE8[7,6] -TABLE8[8,6])^2) 
-      TABLE8[9,8] <- sqrt(TABLE8[9,7]^2 +(TABLE8[9,6] -TABLE8[10,6])^2) 
-      TABLE8[11,8]<- sqrt(TABLE8[11,7]^2+(TABLE8[11,6]-TABLE8[12,6])^2)
-      TABLE8[13,8]<- sqrt(TABLE8[13,7]^2+(TABLE8[13,6]-TABLE8[14,6])^2) 
+      TABLE4[1,8] <- sqrt(TABLE4[1,7]^2 +(TABLE4[1,6] -TABLE4[2,6])^2) 
+      TABLE4[3,8] <- sqrt(TABLE4[3,7]^2 +(TABLE4[3,6] -TABLE4[4,6])^2) 
+      TABLE4[5,8] <- sqrt(TABLE4[5,7]^2 +(TABLE4[5,6] -TABLE4[6,6])^2)
+      TABLE4[7,8] <- sqrt(TABLE4[7,7]^2 +(TABLE4[7,6] -TABLE4[8,6])^2) 
+      TABLE4[9,8] <- sqrt(TABLE4[9,7]^2 +(TABLE4[9,6] -TABLE4[10,6])^2) 
+      TABLE4[11,8]<- sqrt(TABLE4[11,7]^2+(TABLE4[11,6]-TABLE4[12,6])^2)
+      TABLE4[13,8]<- sqrt(TABLE4[13,7]^2+(TABLE4[13,6]-TABLE4[14,6])^2) 
       
-      TABLE8[1,11] <- sqrt(TABLE8[1,10]^2 +(TABLE8[1,9] -TABLE8[2,9])^2) 
-      TABLE8[3,11] <- sqrt(TABLE8[3,10]^2 +(TABLE8[3,9] -TABLE8[4,9])^2) 
-      TABLE8[5,11] <- sqrt(TABLE8[5,10]^2 +(TABLE8[5,9] -TABLE8[6,9])^2)
-      TABLE8[7,11] <- sqrt(TABLE8[7,10]^2 +(TABLE8[7,9] -TABLE8[8,9])^2) 
-      TABLE8[9,11] <- sqrt(TABLE8[9,10]^2 +(TABLE8[9,9] -TABLE8[10,9])^2) 
-      TABLE8[11,11]<- sqrt(TABLE8[11,10]^2+(TABLE8[11,9]-TABLE8[12,9])^2)
-      TABLE8[13,11]<- sqrt(TABLE8[13,10]^2+(TABLE8[13,9]-TABLE8[14,9])^2) 
+      TABLE4[1,11] <- sqrt(TABLE4[1,10]^2 +(TABLE4[1,9] -TABLE4[2,9])^2) 
+      TABLE4[3,11] <- sqrt(TABLE4[3,10]^2 +(TABLE4[3,9] -TABLE4[4,9])^2) 
+      TABLE4[5,11] <- sqrt(TABLE4[5,10]^2 +(TABLE4[5,9] -TABLE4[6,9])^2)
+      TABLE4[7,11] <- sqrt(TABLE4[7,10]^2 +(TABLE4[7,9] -TABLE4[8,9])^2) 
+      TABLE4[9,11] <- sqrt(TABLE4[9,10]^2 +(TABLE4[9,9] -TABLE4[10,9])^2) 
+      TABLE4[11,11]<- sqrt(TABLE4[11,10]^2+(TABLE4[11,9]-TABLE4[12,9])^2)
+      TABLE4[13,11]<- sqrt(TABLE4[13,10]^2+(TABLE4[13,9]-TABLE4[14,9])^2) 
     }
   }
 
 }
 
-# WRITE TABLE8 TO OUTPUT FILE:
+# WRITE TABLE4 TO OUTPUT FILE:
 if(TRUE){
-  cat('\nTable 8\n',file=out.file.name,append=TRUE)
+  cat('\nTable 4\n',file=out.file.name,append=TRUE)
   cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
-  cat('Estimator & mm/m & HW & SP & pooled & balanced \\\\ \n',file=out.file.name,append=TRUE)
+  cat('Estimator & mm/m & RP & SP & pooled & balanced \\\\ \n',file=out.file.name,append=TRUE)
   cat('\\hline\n',file=out.file.name,append=TRUE)
   cat('simple mean    & mm & ',
-      s2(TABLE8[1,1]),' & (',s2(TABLE8[1,2]),') & ',
-      s2(TABLE8[1,3]),' & (',s2(TABLE8[1,4]),') & [',s2(TABLE8[1,5]),'] & ',
-      s2(TABLE8[1,6]),' & (',s2(TABLE8[1,7]),') & [',s2(TABLE8[1,8]),'] & ',
-      s2(TABLE8[1,9]),' & (',s2(TABLE8[1,10]),') & [',s2(TABLE8[1,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[1,1]),' & (',s2(TABLE4[1,2]),') & ',
+      s2(TABLE4[1,3]),' & (',s2(TABLE4[1,4]),') & [',s2(TABLE4[1,5]),'] & ',
+      s2(TABLE4[1,6]),' & (',s2(TABLE4[1,7]),') & [',s2(TABLE4[1,8]),'] & ',
+      s2(TABLE4[1,9]),' & (',s2(TABLE4[1,10]),') & [',s2(TABLE4[1,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('               & m  & ',
-      s2(TABLE8[2,1]),' & (',s2(TABLE8[2,2]),') & ',
-      s2(TABLE8[2,3]),' & (',s2(TABLE8[2,4]),') & & ',
-      s2(TABLE8[2,6]),' & (',s2(TABLE8[2,7]),') & & ',
-      s2(TABLE8[2,9]),' & (',s2(TABLE8[2,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[2,1]),' & (',s2(TABLE4[2,2]),') & ',
+      s2(TABLE4[2,3]),' & (',s2(TABLE4[2,4]),') & & ',
+      s2(TABLE4[2,6]),' & (',s2(TABLE4[2,7]),') & & ',
+      s2(TABLE4[2,9]),' & (',s2(TABLE4[2,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('group means    & mm & ',
-      s2(TABLE8[3,1]),' & (',s2(TABLE8[3,2]),') & ',
-      s2(TABLE8[3,3]),' & (',s2(TABLE8[3,4]),') & [',s2(TABLE8[3,5]),'] & ',
-      s2(TABLE8[3,6]),' & (',s2(TABLE8[3,7]),') & [',s2(TABLE8[3,8]),'] & ',
-      s2(TABLE8[3,9]),' & (',s2(TABLE8[3,10]),') & [',s2(TABLE8[3,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[3,1]),' & (',s2(TABLE4[3,2]),') & ',
+      s2(TABLE4[3,3]),' & (',s2(TABLE4[3,4]),') & [',s2(TABLE4[3,5]),'] & ',
+      s2(TABLE4[3,6]),' & (',s2(TABLE4[3,7]),') & [',s2(TABLE4[3,8]),'] & ',
+      s2(TABLE4[3,9]),' & (',s2(TABLE4[3,10]),') & [',s2(TABLE4[3,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[4,1]),' & (',s2(TABLE8[4,2]),') & ',
-      s2(TABLE8[4,3]),' & (',s2(TABLE8[4,4]),') & & ',
-      s2(TABLE8[4,6]),' & (',s2(TABLE8[4,7]),') & & ',
-      s2(TABLE8[4,9]),' & (',s2(TABLE8[4,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[4,1]),' & (',s2(TABLE4[4,2]),') & ',
+      s2(TABLE4[4,3]),' & (',s2(TABLE4[4,4]),') & & ',
+      s2(TABLE4[4,6]),' & (',s2(TABLE4[4,7]),') & & ',
+      s2(TABLE4[4,9]),' & (',s2(TABLE4[4,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('2SRE--free     & mm & ',
-      s2(TABLE8[5,1]),' & (',s2(TABLE8[5,2]),') & ',
-      s2(TABLE8[5,3]),' & (',s2(TABLE8[5,4]),') & [',s2(TABLE8[5,5]),'] & ',
-      s2(TABLE8[5,6]),' & (',s2(TABLE8[5,7]),') & [',s2(TABLE8[5,8]),'] & ',
-      s2(TABLE8[5,9]),' & (',s2(TABLE8[5,10]),') & [',s2(TABLE8[5,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[5,1]),' & (',s2(TABLE4[5,2]),') & ',
+      s2(TABLE4[5,3]),' & (',s2(TABLE4[5,4]),') & [',s2(TABLE4[5,5]),'] & ',
+      s2(TABLE4[5,6]),' & (',s2(TABLE4[5,7]),') & [',s2(TABLE4[5,8]),'] & ',
+      s2(TABLE4[5,9]),' & (',s2(TABLE4[5,10]),') & [',s2(TABLE4[5,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[6,1]),' & (',s2(TABLE8[6,2]),') & ',
-      s2(TABLE8[6,3]),' & (',s2(TABLE8[6,4]),') & & ',
-      s2(TABLE8[6,6]),' & (',s2(TABLE8[6,7]),') & & ',
-      s2(TABLE8[6,9]),' & (',s2(TABLE8[6,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[6,1]),' & (',s2(TABLE4[6,2]),') & ',
+      s2(TABLE4[6,3]),' & (',s2(TABLE4[6,4]),') & & ',
+      s2(TABLE4[6,6]),' & (',s2(TABLE4[6,7]),') & & ',
+      s2(TABLE4[6,9]),' & (',s2(TABLE4[6,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('\\,\\,--equal  & mm & ',
-      s2(TABLE8[7,1]),' & (',s2(TABLE8[7,2]),') & ',
-      s2(TABLE8[7,3]),' & (',s2(TABLE8[7,4]),') & [',s2(TABLE8[7,5]),'] & ',
-      s2(TABLE8[7,6]),' & (',s2(TABLE8[7,7]),') & [',s2(TABLE8[7,8]),'] & ',
-      s2(TABLE8[7,9]),' & (',s2(TABLE8[7,10]),') & [',s2(TABLE8[7,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[7,1]),' & (',s2(TABLE4[7,2]),') & ',
+      s2(TABLE4[7,3]),' & (',s2(TABLE4[7,4]),') & [',s2(TABLE4[7,5]),'] & ',
+      s2(TABLE4[7,6]),' & (',s2(TABLE4[7,7]),') & [',s2(TABLE4[7,8]),'] & ',
+      s2(TABLE4[7,9]),' & (',s2(TABLE4[7,10]),') & [',s2(TABLE4[7,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[8,1]),' & (',s2(TABLE8[8,2]),') & ',
-      s2(TABLE8[8,3]),' & (',s2(TABLE8[8,4]),') & & ',
-      s2(TABLE8[8,6]),' & (',s2(TABLE8[8,7]),') & & ',
-      s2(TABLE8[8,9]),' & (',s2(TABLE8[8,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[8,1]),' & (',s2(TABLE4[8,2]),') & ',
+      s2(TABLE4[8,3]),' & (',s2(TABLE4[8,4]),') & & ',
+      s2(TABLE4[8,6]),' & (',s2(TABLE4[8,7]),') & & ',
+      s2(TABLE4[8,9]),' & (',s2(TABLE4[8,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('\\,\\,--free T\\&F  & mm & ',
-      s2(TABLE8[9,1]),' & (',s2(TABLE8[9,2]),') & ',
-      s2(TABLE8[9,3]),' & (',s2(TABLE8[9,4]),') & [',s2(TABLE8[9,5]),'] & ',
-      s2(TABLE8[9,6]),' & (',s2(TABLE8[9,7]),') & [',s2(TABLE8[9,8]),'] & ',
-      s2(TABLE8[9,9]),' & (',s2(TABLE8[9,10]),') & [',s2(TABLE8[9,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[9,1]),' & (',s2(TABLE4[9,2]),') & ',
+      s2(TABLE4[9,3]),' & (',s2(TABLE4[9,4]),') & [',s2(TABLE4[9,5]),'] & ',
+      s2(TABLE4[9,6]),' & (',s2(TABLE4[9,7]),') & [',s2(TABLE4[9,8]),'] & ',
+      s2(TABLE4[9,9]),' & (',s2(TABLE4[9,10]),') & [',s2(TABLE4[9,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[10,1]),' & (',s2(TABLE8[10,2]),') & ',
-      s2(TABLE8[10,3]),' & (',s2(TABLE8[10,4]),') & & ',
-      s2(TABLE8[10,6]),' & (',s2(TABLE8[10,7]),') & & ',
-      s2(TABLE8[10,9]),' & (',s2(TABLE8[10,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[10,1]),' & (',s2(TABLE4[10,2]),') & ',
+      s2(TABLE4[10,3]),' & (',s2(TABLE4[10,4]),') & & ',
+      s2(TABLE4[10,6]),' & (',s2(TABLE4[10,7]),') & & ',
+      s2(TABLE4[10,9]),' & (',s2(TABLE4[10,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('\\,\\,--equal T\\&F  & mm & ',
-      s2(TABLE8[11,1]),' & (',s2(TABLE8[11,2]),') & ',
-      s2(TABLE8[11,3]),' & (',s2(TABLE8[11,4]),') & [',s2(TABLE8[11,5]),'] & ',
-      s2(TABLE8[11,6]),' & (',s2(TABLE8[11,7]),') & [',s2(TABLE8[11,8]),'] & ',
-      s2(TABLE8[11,9]),' & (',s2(TABLE8[11,10]),') & [',s2(TABLE8[11,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[11,1]),' & (',s2(TABLE4[11,2]),') & ',
+      s2(TABLE4[11,3]),' & (',s2(TABLE4[11,4]),') & [',s2(TABLE4[11,5]),'] & ',
+      s2(TABLE4[11,6]),' & (',s2(TABLE4[11,7]),') & [',s2(TABLE4[11,8]),'] & ',
+      s2(TABLE4[11,9]),' & (',s2(TABLE4[11,10]),') & [',s2(TABLE4[11,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[12,1]),' & (',s2(TABLE8[12,2]),') & ',
-      s2(TABLE8[12,3]),' & (',s2(TABLE8[12,4]),') & & ',
-      s2(TABLE8[12,6]),' & (',s2(TABLE8[12,7]),') & & ',
-      s2(TABLE8[12,9]),' & (',s2(TABLE8[12,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[12,1]),' & (',s2(TABLE4[12,2]),') & ',
+      s2(TABLE4[12,3]),' & (',s2(TABLE4[12,4]),') & & ',
+      s2(TABLE4[12,6]),' & (',s2(TABLE4[12,7]),') & & ',
+      s2(TABLE4[12,9]),' & (',s2(TABLE4[12,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('\\,\\,--P-P  & mm & ',
-      s2(TABLE8[13,1]),' & (',s2(TABLE8[13,2]),') & ',
-      s2(TABLE8[13,3]),' & (',s2(TABLE8[13,4]),') & [',s2(TABLE8[13,5]),'] & ',
-      s2(TABLE8[13,6]),' & (',s2(TABLE8[13,7]),') & [',s2(TABLE8[13,8]),'] & ',
-      s2(TABLE8[13,9]),' & (',s2(TABLE8[13,10]),') & [',s2(TABLE8[13,11]),'] \\\\ \n',sep='',
+      s2(TABLE4[13,1]),' & (',s2(TABLE4[13,2]),') & ',
+      s2(TABLE4[13,3]),' & (',s2(TABLE4[13,4]),') & [',s2(TABLE4[13,5]),'] & ',
+      s2(TABLE4[13,6]),' & (',s2(TABLE4[13,7]),') & [',s2(TABLE4[13,8]),'] & ',
+      s2(TABLE4[13,9]),' & (',s2(TABLE4[13,10]),') & [',s2(TABLE4[13,11]),'] \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
   
   cat('               & m  & ',
-      s2(TABLE8[14,1]),' & (',s2(TABLE8[14,2]),') & ',
-      s2(TABLE8[14,3]),' & (',s2(TABLE8[14,4]),') & & ',
-      s2(TABLE8[14,6]),' & (',s2(TABLE8[14,7]),') & & ',
-      s2(TABLE8[14,9]),' & (',s2(TABLE8[14,10]),') & \\\\ \n',sep='',
+      s2(TABLE4[14,1]),' & (',s2(TABLE4[14,2]),') & ',
+      s2(TABLE4[14,3]),' & (',s2(TABLE4[14,4]),') & & ',
+      s2(TABLE4[14,6]),' & (',s2(TABLE4[14,7]),') & & ',
+      s2(TABLE4[14,9]),' & (',s2(TABLE4[14,10]),') & \\\\ \n',sep='',
       file=out.file.name,append=TRUE)
 
   cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
-  mean8 <- (sum(TABLE8[,1])/2 + sum(TABLE8[,3]) + sum(TABLE8[,6]) + sum(TABLE8[,9]))/49
+  mean8 <- (sum(TABLE4[,1])/2 + sum(TABLE4[,3]) + sum(TABLE4[,6]) + sum(TABLE4[,9]))/49
   cat('\nMean of all non-repeated estimates in Table 8 =',sprintf('%-.2f\n',mean8),file=out.file.name,append=TRUE)
 }
 
@@ -738,7 +739,7 @@ if(TRUE){
     # Input data are in the Google Sheet file titled "EPA_VSL_metadata" at the
     # following link:
     data <- read_sheet('https://docs.google.com/spreadsheets/d/1wxWgCSZKYWBuX55i4vCCw-ZyldcUP3SfbdvkOnAqdvA/edit?usp=sharing',
-                       sheet='meta-data')
+                       sheet='epa-meta-data')
 
     # Extract variables:
     ID              <- data$GroupID          # unique group id
@@ -807,11 +808,11 @@ if(TRUE){
     
   }
 
-  for(version in c(9,10,11)){ # For Tables 9/12, 10/13, 11/14
+  for(version in c(5,6,7)){ # For Tables 5/S2.5, 6/S2.6, 7/S2.7
 
-    if(version==9 ){PET <- FALSE; PEESE <- FALSE}
-    if(version==10){PET <- TRUE;  PEESE <- FALSE}
-    if(version==11){PET <- FALSE; PEESE <- TRUE}
+    if(version==5){PET <- FALSE; PEESE <- FALSE}
+    if(version==6){PET <- TRUE;  PEESE <- FALSE}
+    if(version==7){PET <- FALSE; PEESE <- TRUE}
 
     # Models [specifications] to estimate:
     #
@@ -1329,11 +1330,11 @@ if(TRUE){
 
     }
 
-    # WRITE TABLEcon [9/10/11] TO OUTPUT FILE:
+    # WRITE TABLE [5/6/7] TO OUTPUT FILE:
     if(TRUE){
       cat('\nTable ',sprintf('%-.0f',version),'\n',sep='',file=out.file.name,append=TRUE)
       cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
-      cat(' & S0 & S1 & S2 & S3 & S4 & S5 & S6 \\\\ \n',file=out.file.name,append=TRUE)
+      cat(' & s0 & s1 & s2 & s3 & s4 & s5 & s6 \\\\ \n',file=out.file.name,append=TRUE)
       cat('\\hline\n',file=out.file.name,append=TRUE)
 
       cat('constant ',file=out.file.name,append=TRUE)
@@ -1425,11 +1426,11 @@ if(TRUE){
       cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
     }
 
-    # WRITE TABLEunc [12/13/14] TO OUTPUT FILE:
+    # WRITE TABLEunc [S2.5/S2.6/S2.7] TO OUTPUT FILE:
     if(TRUE){
-      cat('\nTable ',sprintf('%-.0f',version+3),'\n',sep='',file=out.file.name,append=TRUE)
+      cat('\nTable ',sprintf('S2.%-.0f',version),'\n',sep='',file=out.file.name,append=TRUE)
       cat('\\hline\\hline\n',file=out.file.name,append=TRUE)
-      cat(' & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\\\ \n',file=out.file.name,append=TRUE)
+      cat(' & s0 & s1 & s2 & s3 & s4 & s5 & s6 \\\\ \n',file=out.file.name,append=TRUE)
       cat('\\hline\n',file=out.file.name,append=TRUE)
 
       cat('constant ',file=out.file.name,append=TRUE)
@@ -1535,11 +1536,34 @@ if(TRUE){
       if(max(abs(w.mm-w.m))<1e-6){done <- 1}else{w.m <- w.mm}
     }
     yhat.ma <- sum(yhat.m*w.m)
-    cat('yhat.ma =',sprintf('%-.3f\n',yhat.ma))
+    cat("\n\nJackknife model averaged estimate:\n",file=out.file.name,append=TRUE)
+    cat('yhat.ma =',sprintf('%-.3f\n',yhat.ma),file=out.file.name,append=TRUE)
   }
   
 }
 
 tictocFun('toc')
+
+# WRITE SOURCE FILE TO OUTPUT FILE:
+if(TRUE){
+  
+  cat("\014Writing source file to output file... ")
+  
+  source.file.name <- paste(code.path,'/',script.name,'.R',sep='')
+  
+  # Read lines of source file:
+  Rscript <- readLines(source.file.name)
+  
+  # Write lines of source file to output file:
+  cat('\n\n|---------------------------------------------------------------------------|',file=out.file.name,append=TRUE)
+  cat('\n| R OUTPUT ABOVE                                                            |',file=out.file.name,append=TRUE)
+  cat('\n|---------------------------------------------------------------------------|',file=out.file.name,append=TRUE)
+  cat('\n| R SCRIPT BELOW                                                            |',file=out.file.name,append=TRUE)
+  cat('\n|---------------------------------------------------------------------------|\n\n',file=out.file.name,append=TRUE)
+  for(i in 1:length(Rscript)){cat('\n',Rscript[i],file=out.file.name,append=TRUE)}
+  
+  cat("Done.\n")
+  
+}
 
 

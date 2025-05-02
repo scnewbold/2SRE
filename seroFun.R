@@ -2,7 +2,7 @@
 # This is an R function named 'seroFun'
 # which computes robust standard errors (following Hedges et al 2010) for the
 # the two-stage random-effects meta-analysis estimators
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024).
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025).
 #===============================================================================
 
 seroFun <- function(I,J,y,yhat,g,h){

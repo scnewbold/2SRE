@@ -3,7 +3,7 @@
 # which will run a streamlined (compact) Monte Carlo experiment to verify
 # that our estimators for the non-sampling error variances are valid, as 
 # described in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 #===============================================================================
 
 source("getdataFun.R")

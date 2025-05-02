@@ -2,7 +2,7 @@
 # This is an R function named 'getadataFun'
 # which will construct a small simulated dataset or will import the
 # VSL demonstration dataset used in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 #===============================================================================
 
 getdataFun <- function(sim.or.app,seed){
@@ -47,7 +47,7 @@ getdataFun <- function(sim.or.app,seed){
 
   if(sim.or.app == 'app'){
 
-    # IMPORT DATA USED IN NEWBOLD ET AL (2024):
+    # IMPORT DATA USED IN NEWBOLD ET AL (2023):
     if(TRUE){
       gs4_deauth()
 

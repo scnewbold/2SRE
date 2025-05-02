@@ -1,8 +1,9 @@
 #===============================================================================
 # This is an R function named 'twosremaFun'
 # which computes the two-stage random-effects meta-analysis estimators
-# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024).
+# described in Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025).
 #===============================================================================
+
 twosremaFun <- function(Y,SE,ID,rho){
 
   IDs <- unique(ID)

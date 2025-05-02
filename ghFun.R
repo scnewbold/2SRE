@@ -2,7 +2,7 @@
 # This is an R function named 'ghFun'
 # which will will compute level 1 and level 2 observation weights for
 # the two-stage random-effects meta-analysis estimators described in
-# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2024)
+# Newbold SC, Dockins C, Simon N, Maguire K, Sakib A. (2025)
 #===============================================================================
 
 ghFun <- function(se,sig.eta,sig.mu,rho){
